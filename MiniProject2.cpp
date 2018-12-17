@@ -1,0 +1,204 @@
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <queue>
+
+using namespace std;
+
+struct EventList {
+   // other stuff here
+   void fill(istream& is);
+   void simulate();
+};
+
+
+struct Event{
+
+    //data
+    char type;
+    int time, length;
+
+        bool operator>(Event* x)
+    {
+        return (time<x->time);
+    }
+    bool operator<(Event* x)
+    {
+        return (time>x->time);
+    }
+    Event(int arrival, int serviceLength, char letter)
+    {
+        time = arrival;
+        length = serviceLength;
+        type = letter;
+    }
+    Event(int arrival, char letter)
+    {
+        time = arrival;
+        type = letter;
+    }
+    Event(int arrival, int serviceLength)
+    {
+        time = arrival;
+        length = serviceLength;
+        type = 'A';
+    }
+    Event(int arrival)
+    {
+        time = arrival;
+        type = 'A';
+    }
+    Event()
+    {
+        type = 'A';
+    }
+};
+
+struct Compare : public std::binary_function<Event*, Event*, bool>
+{
+    bool operator() (const Event* x, const Event* y)
+    {
+        return ((x->time)>(y->time));
+    }
+};
+
+void simulate(priority_queue<Event*, vector<Event*>, Compare> &eventList);
+void processArrival(Event* newEvent, priority_queue<Event*, vector<Event*>, Compare> &eventList, queue<Event*> &bankQueue, bool &tellerAvailable, int &currentTime, int &waitTime);
+void processDeparture(Event* newEvent, priority_queue<Event*, vector<Event*>, Compare> &eventList, queue<Event*> &bankQueue, bool &tellerAvailable, int &currentTime, int &waitTime);
+
+
+int main(int argc, char** argv)
+{
+   EventList eventList;
+
+
+   // command-line parameter munging
+   // also fills the event list with the input data
+   char* progname = argv[0];            // simplify msgs a bit
+   switch (argc) {
+   case 1:
+      eventList.fill(cin);
+      break;
+   case 2: {
+      ifstream ifs(argv[1]);
+      if (!ifs) {
+         cerr << progname << ": couldn't open " << argv[1] << endl;
+         return 1;
+      }
+      eventList.fill(ifs);
+      break;
+   }
+   default:
+      cerr << "Usage: " << progname << " [datafile]\n";
+      return 2;
+   }
+
+int arrivalTime, serviceLength, counter = 0, previousTime;
+
+
+
+
+   eventList.simulate();
+}
+
+void EventList::fill(istream& is)
+{
+   cout << "EventList::fill was called\n";
+}
+
+void EventList::simulate()
+{
+   cout << "EventList::simulate was called\n";
+}
+
+void simulate(priority_queue<Event*, vector<Event*>, Compare> &eventList)
+{
+    int currentTime, tempTime, tempLength, counter = 0, waitTime,
+        originalArrivalTimes[eventList.size()];
+    float totalWaitTime = 0;
+    char tempType;
+    queue<Event*> bankQueue;
+    bool tellerAvailable = true;
+
+    if(!eventList.empty())
+    {
+        currentTime = eventList.top()->time;
+    }
+    else{
+        cout << "Event list is empty" << endl;
+    }
+
+    while(!eventList.empty())
+    {
+        tempTime = eventList.top()->time;
+        tempLength = eventList.top()->length;
+        tempType = eventList.top()->type;
+        waitTime = 0;
+        Event* newEvent = new Event(tempTime,tempLength, tempType);
+        currentTime = eventList.top()->time;
+
+        if(newEvent->type=='A')
+        {
+            processArrival(newEvent, eventList, bankQueue, tellerAvailable, currentTime, waitTime);
+            totalWaitTime += waitTime;
+            originalArrivalTimes[counter] = newEvent->time;
+            counter++;
+        }
+        else
+        {
+            processDeparture(newEvent, eventList, bankQueue, tellerAvailable, currentTime, waitTime);
+            totalWaitTime += waitTime;
+        }
+         //processes the arrivals first
+        delete newEvent;
+
+    }
+
+    cout << "Total Number of People Processed: " << counter << endl;
+    totalWaitTime /= counter;
+    cout << "Average amount of time spent waiting: " << totalWaitTime << endl;
+
+    return;
+}
+
+void processArrival(Event* arrivalEvent, priority_queue<Event*, vector<Event*>, Compare> &eventList, queue<Event*> &bankQueue, bool &tellerAvailable, int &currentTime, int &waitTime)
+{
+    int departureTime = currentTime + (arrivalEvent->length);
+    cout << "Processing an arrival at time " << currentTime << " and length " << arrivalEvent->length << endl;
+    eventList.pop();
+
+    if(bankQueue.empty() && tellerAvailable)
+    {
+        eventList.push(new Event(departureTime, 'D'));
+        tellerAvailable = 0;
+    }
+    else
+    {
+        int temp = arrivalEvent->time, tempLength = arrivalEvent->length, tempType = arrivalEvent->type;
+        bankQueue.push(new Event(temp, tempLength, tempType));
+    }
+}
+void processDeparture(Event* departureEvent, priority_queue<Event*, vector<Event*>, Compare> &eventList, queue<Event*> &bankQueue, bool &tellerAvailable, int &currentTime, int &waitTime)
+{
+    int departureTime;
+
+    cout << "Processing a departure at time " << currentTime << endl;
+    eventList.pop();
+
+    if(!bankQueue.empty())
+    {
+       //Transaction
+        Event* customer = bankQueue.front();
+        bankQueue.pop();
+        waitTime = currentTime - (customer->time);
+        departureTime = currentTime + customer->length;
+        eventList.push(new Event(departureTime, 'D'));
+    }
+    else
+    {
+        tellerAvailable = true;
+    }
+}
+
+
+

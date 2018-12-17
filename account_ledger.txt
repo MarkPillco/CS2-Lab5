@@ -1,0 +1,38 @@
+Create         JSmith 1111 5000         // name, accountID, init balance
+setCreditLimit 1111   1000                  // accountID, credit card limit amount
+query          1111                                 // query account
+deposit        1111   700                   // accountID, deposit amount
+query          1111                                 // query account
+withdraw       1111   200                   // account ID, withdraw amount
+query          1111                                 // query account
+purchase       1111   500                   // purchase amount
+query          1111                                 // query account
+payBill        1111				    // pay Credit card bill
+query          1111                                 // query account
+
+Create         JDoe 2222 10000        // name, accountID, init balance
+setCreditLimit 2222 3000                  // accountID, credit card limit amount
+query          2222                                 // query account
+deposit        2222 1000                  // accountID, deposit amount
+query          2222                                 // query account
+withdraw       2222 5000                  // account ID, withdraw amount
+query          2222                                 // query account
+purchase       2222 800                   // purchase amount
+query          2222                                 // query account
+payBill        2222			            // pay Credit card bill
+query          2222                                 // query account
+
+deposit        1111 700                   // accountID, deposit amount
+query          1111                                 // query account
+purchase       2222 200                   // purchase amount
+query          2222                                 // query account
+withdraw       1111 500                   // account ID, withdraw amount
+query          1111                                 // query account
+payBill        2222			            // pay Credit card bill
+query          2222                                // query account
+
+
+
+
+
+
